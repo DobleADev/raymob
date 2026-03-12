@@ -27,6 +27,9 @@ list(APPEND SOURCES ${ANDROID_NDK}/sources/android/native_app_glue/android_nativ
 
 # Create a shared library with game source files
 add_library(${APP_LIB_NAME} SHARED ${SOURCES})
+file(GLOB_RECURSE GAME_SOURCES "../../../../../../../src/*.cpp")
+target_sources(game PRIVATE ${GAME_SOURCES})
+target_include_directories(game PRIVATE "../../../../../../../src")
 
 # Define compiler macros for the library
 target_compile_definitions(${APP_LIB_NAME} PRIVATE PLATFORM_ANDROID)
