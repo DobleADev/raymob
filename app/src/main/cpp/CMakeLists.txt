@@ -15,34 +15,30 @@ project("${APP_LIB_NAME}")
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raylib)
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raymob)
 
-# Fetch all source files for your project (recursively), excluding 'deps' source files
-# file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/*.c" "${CMAKE_SOURCE_DIR}/*.cpp")
-# list(FILTER SOURCES EXCLUDE REGEX "${CMAKE_SOURCE_DIR}/deps/.*")
+# Recolectar fuentes del juego (desde PROJECT_ROOT/src)
+# Ajusta la cantidad de ".." si la estructura real es diferente:
+# desde .../android/raymob/app/src/main/cpp hasta PROJECT_ROOT/src = 6 niveles
 file(GLOB_RECURSE GAME_SOURCES "../../../../../../src/*.cpp")
-target_sources(game PRIVATE ${GAME_SOURCES})
-target_include_directories(game PRIVATE "../../../../../../src")
 
-# Add headers directory for android_native_app_glue.c
+# Pegamento de Android
 include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
+set(ANDROID_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
-# Add android_native_app_glue.c to the source files
-list(APPEND SOURCES ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+# Crear la biblioteca nativa con los fuentes del juego y el glue
+add_library(${APP_LIB_NAME} SHARED ${GAME_SOURCES} ${ANDROID_GLUE})
 
-# Create a shared library with game source files
-add_library(${APP_LIB_NAME} SHARED ${SOURCES})
-
-
-# Define compiler macros for the library
+# Definiciones comunes
 target_compile_definitions(${APP_LIB_NAME} PRIVATE PLATFORM_ANDROID)
-
-# Apply flags depending on the build type
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     target_compile_definitions(${APP_LIB_NAME} PRIVATE _DEBUG DEBUG)
 endif()
 
-# Include raylib and raymob header files
-target_include_directories(${APP_LIB_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/deps/raylib")
-target_include_directories(${APP_LIB_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/deps/raymob")
+# Directorios de inclusión
+target_include_directories(${APP_LIB_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/deps/raylib"
+    "${CMAKE_SOURCE_DIR}/deps/raymob"
+    "../../../../../../src"   # Para que los fuentes encuentren sus headers
+)
 
-# Link required libraries to the native application
+# Enlazar con raylib y raymoblib
 target_link_libraries(${APP_LIB_NAME} raylib raymoblib)
