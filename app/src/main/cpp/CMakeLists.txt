@@ -18,9 +18,9 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raymob)
 # Fetch all source files for your project (recursively), excluding 'deps' source files
 # file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/*.c" "${CMAKE_SOURCE_DIR}/*.cpp")
 # list(FILTER SOURCES EXCLUDE REGEX "${CMAKE_SOURCE_DIR}/deps/.*")
-file(GLOB_RECURSE GAME_SOURCES "../../../../../../../src/*.cpp")
+file(GLOB_RECURSE GAME_SOURCES "../../../../../../src/*.cpp")
 target_sources(game PRIVATE ${GAME_SOURCES})
-target_include_directories(game PRIVATE "../../../../../../../src")
+target_include_directories(game PRIVATE "../../../../../../src")
 
 # Add headers directory for android_native_app_glue.c
 include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
