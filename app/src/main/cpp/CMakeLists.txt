@@ -9,8 +9,11 @@ project("${APP_LIB_NAME}")
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raylib)
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raymob)
 
-# Archivo principal de raymob (proporciona android_main)
-set(RAYMOB_MAIN ${CMAKE_SOURCE_DIR}/deps/raymob/raymob.c)
+# Buscar el archivo principal de raymob (puede ser .c o .cpp)
+file(GLOB_RECURSE RAYMOB_MAIN_SRC "${CMAKE_SOURCE_DIR}/deps/raymob/raymob.c" "${CMAKE_SOURCE_DIR}/deps/raymob/raymob.cpp")
+if(NOT RAYMOB_MAIN_SRC)
+    message(FATAL_ERROR "No se encontró raymob.c o raymob.cpp en ${CMAKE_SOURCE_DIR}/deps/raymob. Verifica que el submódulo de raymob esté correctamente inicializado.")
+endif()
 
 # Fuentes del juego (desde PROJECT_ROOT/src)
 file(GLOB_RECURSE GAME_SOURCES "../../../../../../src/*.cpp")
@@ -20,7 +23,7 @@ include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
 set(ANDROID_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
 # Biblioteca nativa
-add_library(${APP_LIB_NAME} SHARED ${GAME_SOURCES} ${ANDROID_GLUE} ${RAYMOB_MAIN})
+add_library(${APP_LIB_NAME} SHARED ${GAME_SOURCES} ${ANDROID_GLUE} ${RAYMOB_MAIN_SRC})
 
 # Definiciones
 target_compile_definitions(${APP_LIB_NAME} PRIVATE PLATFORM_ANDROID)
@@ -32,7 +35,7 @@ endif()
 target_include_directories(${APP_LIB_NAME} PRIVATE
     "${CMAKE_SOURCE_DIR}/deps/raylib"
     "${CMAKE_SOURCE_DIR}/deps/raymob"
-    "../../../../../../src"   # para headers del juego
+    "../../../../../../src"
 )
 
 # Enlace
