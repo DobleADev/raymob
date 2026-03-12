@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22.1)
 
 # Project name
 project("game")
@@ -15,12 +15,12 @@ add_subdirectory(deps/raylib)
 # 2. raymob helper sources (keep these)
 # ============================================================
 set(RAYMOB_SOURCES
+    deps/raymob/callback.c
     deps/raymob/display.c
-    deps/raymob/init.c
-    deps/raymob/input.c
-    deps/raymob/jni_utils.c
-    deps/raymob/sensors.c
-    deps/raymob/vibration.c
+    deps/raymob/helper.c
+    deps/raymob/sensor.c
+    deps/raymob/soft_keyboard.c
+    deps/raymob/vibrator.c
     # Add any other .c files from deps/raymob/ (but NOT example/)
 )
 
