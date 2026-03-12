@@ -37,6 +37,14 @@ file(GLOB_RECURSE GAME_SOURCES
     "${PROJECT_ROOT}/app/*.cpp"
 )
 
+
+# Add headers directory for android_native_app_glue.c
+include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
+
+# Add android_native_app_glue.c to the source files
+list(APPEND GAME_SOURCES ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+
+
 # If you have any .c files, add them as well:
 # file(GLOB_RECURSE GAME_C_SOURCES "${PROJECT_ROOT}/src/*.c")
 # list(APPEND GAME_SOURCES ${GAME_C_SOURCES})
