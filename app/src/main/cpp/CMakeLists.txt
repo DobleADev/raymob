@@ -1,36 +1,75 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.18)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+# Project name
+project("game")
 
-project("${APP_LIB_NAME}")
+# Set C++ standard (match your project)
+set(CMAKE_CXX_STANDARD 17)
 
-# Submódulos raylib y raymob (bibliotecas estáticas)
-add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raylib)
-add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raymob)
+# ============================================================
+# 1. Include raylib (from submodule)
+# ============================================================
+add_subdirectory(deps/raylib)
 
-# Fuentes del juego (desde PROJECT_ROOT/src)
-file(GLOB_RECURSE GAME_SOURCES "../../../../../../src/*.cpp")
-
-# Pegamento de Android
-include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
-set(ANDROID_GLUE ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-
-# Biblioteca nativa (tu juego + glue)
-add_library(${APP_LIB_NAME} SHARED ${GAME_SOURCES} ${ANDROID_GLUE})
-
-# Definiciones
-target_compile_definitions(${APP_LIB_NAME} PRIVATE PLATFORM_ANDROID)
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    target_compile_definitions(${APP_LIB_NAME} PRIVATE _DEBUG DEBUG)
-endif()
-
-# Directorios de inclusión
-target_include_directories(${APP_LIB_NAME} PRIVATE
-    "${CMAKE_SOURCE_DIR}/deps/raylib"
-    "${CMAKE_SOURCE_DIR}/deps/raymob"
-    "../../../../../../src"   # para headers del juego
+# ============================================================
+# 2. raymob helper sources (keep these)
+# ============================================================
+set(RAYMOB_SOURCES
+    deps/raymob/display.c
+    deps/raymob/init.c
+    deps/raymob/input.c
+    deps/raymob/jni_utils.c
+    deps/raymob/sensors.c
+    deps/raymob/vibration.c
+    # Add any other .c files from deps/raymob/ (but NOT example/)
 )
 
-# Enlace con raylib y raymoblib
-target_link_libraries(${APP_LIB_NAME} raylib raymoblib)
+# ============================================================
+# 3. YOUR GAME SOURCES (adjust paths to your project root)
+# ============================================================
+# Assume the project root is 6 levels up from this file:
+#   android/raymob/app/src/main/cp p/CMakeLists.txt
+#   -> ../../../../../../../   (goes to repo root)
+set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../../)
+
+file(GLOB_RECURSE GAME_SOURCES
+    "${PROJECT_ROOT}/src/*.cpp"
+    "${PROJECT_ROOT}/app/*.cpp"
+)
+
+# If you have any .c files, add them as well:
+# file(GLOB_RECURSE GAME_C_SOURCES "${PROJECT_ROOT}/src/*.c")
+# list(APPEND GAME_SOURCES ${GAME_C_SOURCES})
+
+# ============================================================
+# 4. Create the shared library
+# ============================================================
+add_library(game SHARED
+    ${RAYMOB_SOURCES}
+    ${GAME_SOURCES}
+)
+
+# Include directories
+target_include_directories(game PRIVATE
+    ${PROJECT_ROOT}/src          # for your own headers
+    deps/raylib/src              # raylib headers
+    deps/raymob                  # for raymob.h
+)
+
+# Link libraries
+target_link_libraries(game
+    raylib
+    log   # Android logging
+    z     # compression (if needed)
+    GLESv3
+    EGL
+    android
+    OpenSLES
+)
+
+# Define Android platform (optional, already handled by Gradle)
+target_compile_definitions(game PRIVATE
+    PLATFORM_ANDROID
+    # Add any other macros your code expects, e.g.:
+    # ANDROID
+)
